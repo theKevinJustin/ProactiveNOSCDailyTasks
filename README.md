@@ -15,7 +15,7 @@ v1.0.4.4  18 Jul 2023 Updated reports to informational
 v1.0.4.3  10 Feb 2023 Disabled AlertUpdates and ATQ ticket automation, updated ExpiringCertificates report
 v1.0.3.4   8 Jun 2022 Updated AlertUpdatesReport
 v1.0.3.3   7 Jun 2022 Updated DailySummary, AlertUpdates, agent issues
-v1.0.3.0  24 May 2022 Updated Daily Summarv1.0.2.8  18 May 2022 Updated closure logic for AlertUpdates,ScriptErrors,Longrunning reports, updated runtimes
+v1.0.2.8  18 May 2022 Updated closure logic for AlertUpdates,ScriptErrors,Longrunning reports, updated runtimes
 v1.0.2.6  20 Apr 2022 New AlertUpdates module updating ticketID,Owner,ResolutionState for new alerts (runs M-F daily)
 v1.0.2.4  15 Dec 2021 Updated Daily Summary to reduce output, updated rule task alert
 v1.0.1.8  19 Nov 2021 Added longrunning script check
