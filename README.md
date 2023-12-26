@@ -5,8 +5,9 @@ Proactive NOSC Daily Tasks - Management pack provides summary report alerts of k
 
 https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/
 
-v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates
-v1.0.4.8  20 Dec 2023 Updated all Get-SCOMAlert queries to use -ResolutionState (0..254) for performance increase over where-object 		  
+# Change History
+```v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates
+v1.0.4.8  20 Dec 2023 Updated all Get-SCOMAlert queries to use -ResolutionState (0..254) for performance increase over where-object
 v1.0.4.7  18 Dec 2023 Updated Expiring Certs DS/WA, whitespace code check
 v1.0.4.6  30 Nov 2023 Removed debug detail from DS/WA which showed in Health Explorer pane
 v1.0.4.4  18 Jul 2023 Updated reports to informational
@@ -27,5 +28,5 @@ v1.0.0.17 17 Aug 2020 Added Pending Reboot monitor alerts functionality
 v1.0.0.10  5 Aug 2020 Updated Test variable, previously Test.Count
 v1.0.0.3   5 Aug 2020 Updated Task description, Alert rule regular expression for manual task execution
 v1.0.0.0   4 Aug 2020 Pack that contains NOSC daily tasks, reports, alerts for SysAdmin Teams.  
-Example Logical Disk Free Space report.  Added additional debug, removed MatchCount suppression, updated $Test
-Removed $Summary and $Details bags, created 2 new 550 events for total alerts and alert summary and detail.
+	Example Logical Disk Free Space report.  Added additional debug, removed MatchCount suppression, updated $Test
+	Removed $Summary and $Details bags, created 2 new 550 events for total alerts and alert summary and detail.```
