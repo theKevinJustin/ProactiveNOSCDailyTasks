@@ -6,7 +6,8 @@ Proactive NOSC Daily Tasks - Management pack provides summary report alerts of k
 https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/
 
 # Change History
-```v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates
+```
+v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates, Expiring Certs report moved back 1 hour
 v1.0.4.8  20 Dec 2023 Updated all Get-SCOMAlert queries to use -ResolutionState (0..254) for performance increase over where-object
 v1.0.4.7  18 Dec 2023 Updated Expiring Certs DS/WA, whitespace code check
 v1.0.4.6  30 Nov 2023 Removed debug detail from DS/WA which showed in Health Explorer pane
