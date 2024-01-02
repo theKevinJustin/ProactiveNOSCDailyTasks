@@ -1,12 +1,16 @@
-Proactive.NOSC.Daily.Tasks 1.0.4.9
+# Proactive.NOSC.Daily.Tasks v1.0.5.0
+
 Download [here](https://github.com/theKevinJustin/ProactiveNOSCDailyTasks/blob/main/Proactive.NOSC.Daily.Tasks.xml)
 
-Proactive NOSC Daily Tasks - Management pack provides summary report alerts of key insights including - Expiring certificates, Logical Disk alerts, Pending reboots, System Admin summary, and SCOM admin reports including long-running scripts, script errors, SCOM errors, and alert updates report.
+### Proactive NOSC Daily Tasks
+Management pack provides summary report alerts of key insights including:
+Expiring certificates, Logical Disk alerts, Pending reboots, System Admin summary, and SCOM admin reports including long-running scripts, script errors, SCOM errors, and alert updates report.
 
-https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/
+Blog [https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/](https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/)
 
 # Change History
 ```
+v1.0.5.0   4 Jan 2024 Resolution State logic improvements for large environments
 v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates, Expiring Certs report moved back 1 hour
 v1.0.4.8  20 Dec 2023 Updated all Get-SCOMAlert queries to use -ResolutionState (0..254) for performance increase over where-object
 v1.0.4.7  18 Dec 2023 Updated Expiring Certs DS/WA, whitespace code check
