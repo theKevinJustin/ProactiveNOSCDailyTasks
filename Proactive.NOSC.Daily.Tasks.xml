@@ -2,7 +2,7 @@
   <Manifest>
     <Identity>
       <ID>Proactive.NOSC.Daily.Tasks</ID>
-      <Version>1.0.5.0</Version>
+      <Version>1.0.5.7</Version>
     </Identity>
     <Name>Proactive NOSC Daily Tasks</Name>
     <References>
@@ -55,7 +55,7 @@
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Expiring Certificate Alerts on demand task
@@ -69,7 +69,7 @@
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.Datasource.v1057.ps1"
 $EventID = "556"
 #=================================================================================
 
@@ -83,7 +83,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"ExpiringCertsAlerts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -174,7 +174,7 @@ if ( $Test -gt 0 )
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"ExpiringCertsAlerts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -215,7 +215,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Logical Disk Free space is low monitors and alert daily
@@ -229,7 +229,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "550"
 #=================================================================================
 
@@ -243,7 +243,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"LogicalDisk FreeSpace Alerts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -288,24 +288,44 @@ IF ($Test -gt 0)
 
 	# Gather Summary section
 	# Debug
-	#$Summary = get-scomalert -name "Logical disk Free space is low" -ResolutionState (0..254) |select NetbiosComputerName,MonitoringObjectName,Parameters | out-string
+	# $Summary = get-scomalert -name "Logical disk Free space is low" -ResolutionState (0..254) |select NetbiosComputerName,MonitoringObjectName,Parameters | out-string
 	# Gather Details section
-	#$Details = get-scomalert -name "Logical disk Free space is low" -ResolutionState (0..254) | fl NetbiosComputerName,MonitoringObjectName,Parameters,Description | out-string
+	# $Details = get-scomalert -name "Logical disk Free space is low" -ResolutionState (0..254) | fl NetbiosComputerName,MonitoringObjectName,Parameters,Description | out-string
 	# Production
 	$Summary = get-scomalert -ResolutionState (0..254) -name "Logical disk Free space is low" |  select NetbiosComputerName,MonitoringObjectName,Parameters | out-string
 	# Gather Details section
 	$Details = get-scomalert -ResolutionState (0..254) -name "Logical disk Free space is low" | fl NetbiosComputerName,MonitoringObjectName,Parameters,Description | out-string
 
-	$Summary
-	write-host ""
-	$Details
+	#$Summary
+	#write-host ""
+	#$Details
+
+	$SummaryReport = @()
+
+	$SummaryReport += $Message
+	$SummaryReport += ""
+	$SummaryReport += "# Alert Count: $($Test)"
+	$SummaryReport += ""
+	$SummaryReport += $Message
+	$SummaryReport += ""
+	$SummaryReport += "# Summary:"
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += $Summary
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += ""
+	$SummaryReport += "# Details"
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += $Details
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += ""
+
 
 	$momapi.LogScriptEvent($ScriptName,$EventID,0,"$Message`n`n$Summary`n`n$Details")
 
 	$bag.AddValue('Result',$Result)
 	$bag.AddValue('Count',$Test)
 	$bag.AddValue('Message',$Message)
-	$bag.AddValue('Summary',$Summary)
+	$bag.AddValue('Summary',$SummaryReport)
 	$bag.AddValue('Details',$Details)
 	}
 ELSE
@@ -316,7 +336,7 @@ ELSE
 	$bag.AddValue('Result',$Result)
 	$bag.AddValue('Count',$Test)
 	$bag.AddValue('Message',$Message)
-	$bag.AddValue('Summary',$Summary)
+	$bag.AddValue('Summary',$SummaryReport)
 	$bag.AddValue('Details',$Details)
 
 	$momapi.LogScriptEvent($ScriptName,$EventID,0, "Daily Logical Disk Free space report has ZERO alerts for ($date)" )
@@ -334,7 +354,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"LogicalDisk FreeSpace Alerts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -375,7 +395,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Pending Reboot Alerts, and alert daily
@@ -389,7 +409,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "552"
 #=================================================================================
 
@@ -403,7 +423,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -579,14 +599,14 @@ $bag
 
 #=================================================================================
 # End MAIN script section
- 
-  
+
+
 # End of script section
 #=================================================================================
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"`n Script Completed. `n Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts Report Script Completed. `n Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -627,7 +647,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"`n Script Completed. `n Script Ru
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Pending Reboot Alerts, and alert daily
@@ -641,7 +661,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"`n Script Completed. `n Script Ru
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "560"
 #=================================================================================
 
@@ -655,7 +675,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts ServerName Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -757,7 +777,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts ServerName Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -798,7 +818,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.Report.Script.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.Report.Script.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather DailySummary report data for enterprise
@@ -812,7 +832,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.Report.Script.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.Report.Script.Datasource.v1057.ps1"
 $EventID = "554"
 #=================================================================================
 
@@ -826,7 +846,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"Daily Summary Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -880,42 +900,78 @@ $Performance = $UnhealthyServerAlerts | sort -property NetbiosComputername -uniq
 #$Performance
 
 
-# Figure out Remedy tickets	for report
-#date
-$AllRemedyTix = get-scomalert -ResolutionState (0..254) | ? { ($_.TicketID -ne $null ) -AND ( $_.TimeRaised -gt $Time ) }
-#$AllRemedyTix = $AllRemedyTix | select NetBiosComputerName,TicketID,TimeRaised,Name,Description -auto
+# Figure out ServiceNow tickets	for report
+#
+$AllServiceNowTix = get-scomalert | where { ($_.TicketID -ne $null ) -AND ( $_.TimeRaised -gt $Time ) }
+#$AllServiceNowTix = $AllServiceNowTix | FT NetBiosComputerName,TicketID,TimeRaised,Owner,Name,Description -auto -wrap
 # date
+$AllServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
 
 #
-# Open Remedy Tickets
-# date
-$RemedyTix = $AllRemedyTix | ? { ($_.ResolutionState -ne "255" ) `
-	}
-#date
-# $RemedyTix = get-scomalert -ResolutionState (0..254) | ? { ( $_.TicketID -ne $null ) `
-#	-AND ( $_.ResolutionState -ne "255") `
-#	-AND ( $_.TimeRaised -gt $Time ) 
-#	}
+# Open ServiceNow Tickets
+$OpenServiceNowTix = $AllServiceNowTix | ? { ($_.ResolutionState -ne "255" ) }
+$ClosedServiceNowTix = get-scomalert -ResolutionState 255 | where { ($_.TicketID -ne $null ) }
+# $ClosedServiceNowTix.Count
 
+
+
+# Figure out ServiceNow tickets	for report
+#
+$AllServiceNowTix = get-scomalert | where { ($_.TicketID -ne $null ) -AND ( $_.TimeRaised -gt $Time ) }
+#$AllServiceNowTix = $AllServiceNowTix | FT NetBiosComputerName,TicketID,TimeRaised,Owner,Name,Description -auto -wrap
+# date
+# $AllServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+
+#
+# Open ServiceNow Tickets
+$OpenServiceNowTix = $AllServiceNowTix | ? { ($_.ResolutionState -ne "255" ) }
+$ClosedServiceNowTix = get-scomalert -ResolutionState 255 | where { ($_.TicketID -ne $null ) }
+# $ClosedServiceNowTix.Count
+
+
+# Create array
 $Tickets = @()
 
-$Tickets += "Closed alerts with same alert name" 
 
-foreach ($alert in ($RemedyTix.Name |sort -uniq) )
+if ( $AllServiceNowTix.Count -gt 0 )
 	{
-	#$alert
-	$Tickets += $alert
+	$Tickets += "ServiceNow Tickets since the last report"
+	$Tickets += "#============================================================"
+	$Tickets += $AllServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+	$Tickets += "#============================================================"
 	$Tickets += ""
-	$Tickets +=	$($AllRemedyTix | ? { ( $_.Name -eq $alert ) } ).Count
-	$Tickets +=	$AllRemedyTix | ? { ( $_.Name -eq $alert ) } | sort -property Name | select TicketID,NetbiosComputername,Name
-	$Tickets += "#============================================================" 
+	}
+
+if ( $OpenServiceNowTix.Count -gt 0 )
+	{
+	$Tickets += "Open Alerts with ServiceNow tickets"
+	$Tickets += "#============================================================"
+	$Tickets += $OpenServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+	$Tickets += "#============================================================"
+	$Tickets += ""
+	}
+	
+if ( $ClosedServiceNowTix.Count -gt 0 )
+	{
+	$Tickets += "Closed alerts with same alert name"
+	$Tickets += ""
+	
+	foreach ($alert in ($ClosedServiceNowTix.Name |sort -uniq ) )
+		{
+		$Tickets += "#============================================================"
+		$Tickets += $alert
+		$Tickets += ""
+		$Tickets +=	$($AllServiceNowTix | where { ( $_.Name -eq $alert ) } ).Count
+		$Tickets +=	$AllServiceNowTix | where { ( $_.Name -eq $alert ) } | sort -property Name | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+		$Tickets += "#============================================================"
+		}
 	}
 
 $Tickets = $Tickets | out-string
 
-$OpenTix = $RemedyTix | select NetBiosComputerName,TicketID,TimeRaised,Name
-#$OpenTix  | out-string
-  
+
+
+
 $UHSAMessage = @()
 if ( $UnhealthyServerAlerts.Count -eq 0 )
 	{
@@ -931,30 +987,23 @@ if ( $UnhealthyServerAlerts.Count -gt 0 )
 	$UHSAMessage += ""
 	}
 
-if ( $RemedyTix.Count -eq 0 )
+if ( $ServiceNowTix.Count -eq 0 )
 	{
 	$UHSAMessage += ""
-	$UHSAMessage += "ZERO Remedy Tickets since last report run"	
+	$UHSAMessage += "ZERO ServiceNow Tickets since last report run"	
 	$UHSAMessage += ""
 	}
 
-if ( $RemedyTix.Count -gt 0 )
+if ( $ServiceNowTix.Count -gt 0 )
 	{
 	$UHSAMessage += ""
-	$UHSAMessage += "# Open issues with Remedy tickets"
-	$UHSAMessage += "#============================================================"
-	$UHSAMessage += $OpenTix
-	$UHSAMessage += "#============================================================"
-	$UHSAMessage += "#"
-	$UHSAMessage += "# Details from past tickets"
-	$UHSAMessage += "#============================================================"
 
-	if ( $AllRemedyTix.Count -lt 10 )
+	if ( $AllServiceNowTix.Count -lt 10 )
 		{
 		$UHSAMessage += $Tickets
 		$UHSAMessage += ""
 		}
-	if ( $AllRemedyTix.Count -gt 10 )
+	if ( $AllServiceNowTix.Count -gt 10 )
 		{
 		$UHSAMessage += "More than ten (10) open tickets"
 		#$UHSAMessage +=$Tickets
@@ -1317,10 +1366,17 @@ if ( $NotMonitored.Count -gt 0 )
 	}
 
 # Trim empty lines
-$TotalAgents = $TotalAgentIssues | ? { $_ -and $_.Trim() }
+$TotalAgents = $TotalAgentIssues | sort -unique | where { $_ -and $_.Trim() }
+
 #$TotalAgents
 # Trim where clause | ? { $_ -and $_.Trim() }
-$FinalCompare = compare-object -ReferenceObject $MM -DifferenceObject $TotalAgents
+
+if ( $MM.Count -ne 0 ) { $FinalCompare = compare-object -ReferenceObject $MM -DifferenceObject $TotalAgents }
+if ( $MM.Count -eq 0 )
+	{
+	$FinalCompare = $TotalAgents
+	}
+
 
 
 #======================================================================
@@ -1342,13 +1398,13 @@ if ( $TotalAgents.Count -gt 0)
 	$UnhealthyAgents += ""
 	$UnhealthyAgents += "# NOT monitored server detail"
 	$UnhealthyAgents += "#============================"
-	if ( $TotalAgent.Count -lt 28)
+	if ( $TotalAgent.Count -lt 25)
 		{
 		$UnhealthyAgents += $TotalAgents
 		}
-	if ( $TotalAgentIssues.Count -gt 28)
+	if ( $TotalAgentIssues.Count -gt 25)
 		{
-		$UnhealthyAgents += "MORE than 25 servers NOT monitored"
+		$UnhealthyAgents += "MORE than 20 servers NOT monitored"
 		}
 	$UnhealthyAgents += "#=================================================="
 	$UnhealthyAgents += ""
@@ -1720,7 +1776,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"Daily Summary Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -1761,7 +1817,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather DailySummary report data for enterprise
@@ -1775,7 +1831,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "558"
 #=================================================================================
 
@@ -1789,7 +1845,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOM Admin Alerts Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -1824,6 +1880,7 @@ $DSMessage = "Proactive Daily Summary SCOM Admin Alerts for date ($date)."
 #===============================================
 $OldReports = get-scomalert -ResolutionState (0..254) | ? { ( $_.Name -like "ADDSAlerts*" ) `
 	-OR ( $_.Name -like "*DailyTasks*" ) `
+	-OR ( $_.Name -like "Dell OMS*" ) `
 	-OR ( $_.Name -like "*McAfee*" ) `
 	-OR ( $_.Name -like "Microsoft Windows DCOM*" ) `
 	-OR ( $_.Name -like "Microsoft Windows Server AD*" ) `
@@ -1833,7 +1890,7 @@ $OldReports = get-scomalert -ResolutionState (0..254) | ? { ( $_.Name -like "ADD
 	-OR ( $_.Name -like "Proactive DC NetLogon*" ) `
 	-OR ( $_.Name -like "Proactive DFSR 5008*" ) `
 	-OR ( $_.Name -like "Proactive NOSC DailyTasks*" ) `
-	-OR ( $_.Name -like "*Remedy*" ) `
+	-OR ( $_.Name -like "*ServiceNow*" ) `
 	-OR ( $_.Name -like "*Tangible ProV ProVService Report*" ) `
 	-OR ( $_.Name -like "*Tanium EventID7031 Rule Alert" ) `
 	} | ? { $_.ResolutionState -ne 255 }
@@ -1886,6 +1943,40 @@ $UnhealthyAgentAlerts = get-scomalert -ResolutionState (0..254)  | ? { $_.TimeRa
 	}
 
 
+# Break out Power Shell Script was dropped alerts
+
+$Dropped = $UnhealthyAgentAlerts | where { $_.Name -eq "Power Shell script was dropped" }
+
+# Test
+#$Dropped = Get-EventLog -logname "Operations Manager" | where { $_.EventID -eq 22411 }
+#$Dropped = $Dropped.Message
+
+$Workflows = @()
+
+if ( $Dropped.Count -gt 0 )
+	{
+	foreach ($LLine in $Dropped )
+		{
+		$Lmatch = $LLine |select-string -pattern ':'
+		if ($Lmatch)
+			{
+			#$Lmatch
+			$LLineSplit = $LLine.Split(":")
+			#$LLineSplit[2]
+			#$LLineSplit[1] #; $LLineSplit[2]
+			#$LLineSplit[3]
+			$LLineSplit2 = $LLineSplit[2].Split(" ")
+			$LLineSplit2[1]
+			$Workflows += $LLineSplit2[1]
+			}
+		}
+	}
+
+$WorkflowOutput = $Workflows | sort -unique
+
+#$WorkflowOutput
+
+
 #
 # Set up array for unhealthy agent report
 $UHAAMessage = @()
@@ -1904,27 +1995,45 @@ if ( $UnhealthyAgentAlerts.Count -gt 0 )
 	$UHAAMessage += "# Auto-closed monitors = $($UnhealthyMonitors.Count)"
 	$UHAAMessage += "# Auto-closed rules = $($SCOMAdminRulesToClose.Count)"
 	$UHAAMessage += ""
-	$UHAAMessage += "# Servers NOT being monitored correctly"
-	$UHAAMessage += "#======================================"
-	$UHAAMessage += "# Contain SCOM Agent workflow/powershell/WMI/service checks that alert with failures"
-	$UHAAMessage += "#==================================================================================="
 
-	foreach ( $Server in ($UnhealthyAgentAlerts.NetBiosComputerName | sort -unique ) )
+	if ( ($UnhealthyAgentAlerts | where { $_.Name -ne "Power Shell script was dropped" }).Count -gt 0 )
 		{
-		$Server
-		$Alerts = (($UnhealthyAgentAlerts.NetBiosComputerName) | ? { $_ -eq $server } ).Count
-		$UHAAMessage += "Server $($Server) has $($Alerts) alerts"
-		}
+		$UHAAMessage += "# Servers NOT being monitored correctly"
+		$UHAAMessage += "#======================================"
+		$UHAAMessage += "# Alerts contain SCOM Agent workflow/powershell/WMI/service checks that alert with failures"
+		$UHAAMessage += "#==================================================================================="
 
-	$UHAAMessage += ""
-	$UHAAMessage += "# Unhealthy Agent alert details"
-	$UHAAMessage += "#=============================="
-	$UHAAMessage += $UnhealthyAgentAlerts | select NetBiosComputerName,TimeRaised,Name
-	$UHAAMessage += "#=============================="
-	$UHAAMessage += ""
+		#foreach ( $Server in ($UnhealthyAgentAlerts.NetBiosComputerName | sort -unique ) )
+		#	{
+		#	$Server
+		#	$Alerts = (($UnhealthyAgentAlerts.NetBiosComputerName) | ? { $_ -eq $server } ).Count
+		#	$UHAAMessage += "Server $($Server) has $($Alerts) alerts"
+		#	}
+
+		if ( $WorkflowOutput.Count -gt 0 )
+			{
+			$UHAAMessage += ""
+			$UHAAMessage += "# Power Shell script was dropped alert details"
+			$UHAAMessage += "#=============================="
+			$UHAAMessage += $WorkflowOutput
+			$UHAAMessage += "#=============================="
+			}
+
+
+		$UHAAMessage += ""
+		$UHAAMessage += "# Remaining Unhealthy Agent alerts"
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += $UnhealthyAgentAlerts | where { $_.Name -ne "Power Shell script was dropped" } | sort -property Name -unique | select Name
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += "# Remaining Unhealthy Agent alert details"
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += $UnhealthyAgentAlerts | where { $_.Name -ne "Power Shell script was dropped" } | format-table TimeRaised,MonitoringObjectDisplayName,Name -auto -wrap
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += ""
+		}
 	}
 
-	#$UHAAMessage 
+	#$UHAAMessage
 
 	$UHAAMessage = $UHAAMessage | out-string
 
@@ -1936,7 +2045,7 @@ if ( $UnhealthyAgentAlerts.Count -gt 0 )
 # Tally up all the property bags for datasource
 
 $Result = "GOOD"
-  
+
 # Log 
 $Summary = "$UHAAMessage `n `nDisclaimer:  This daily summary report is to document the manual tasks used by NOSC to check AD and AD Replication health, Pending Reboot Report, Logical Disk errors,Expiring Certificates, Unhealthy Server/Agents, Unhealthy agent workflow/script alerts, and Servers in Maintenance Mode"
 $Summary
@@ -1961,12 +2070,12 @@ $SCOMAdminRulesToClose = @()
 
 $SCOMAdminRulesToClose = get-scomalert -ResolutionState (0..254) | ? { $_.TimeRaised -gt $Time } | ? { ( $_.Name -like "*ADDSAlerts*" ) `
 	-OR ( $_.Name -eq "AD CS Program Resource Availability - CA service stopped" ) `
+	-OR ( $_.Name -eq "Agent errors for over-utilized server" ) `
 	-OR ( $_.Name -eq "Alert generation was temporarily suspended due to too many alerts." ) `
 	-OR ( $_.Name -eq "Alert on Failure to Create PowerShell Run space for Power Shell Script" ) `
 	-OR ( $_.Name -eq "All Management Servers Pool Unavailable." ) `
 	-OR ( $_.Name -eq "An error occurred during computer verification from the discovery wizard" ) `
 	-OR ( $_.Name -eq "cluster service has determined that this node does not have the latest copy of cluster configuration data" ) `
-	-OR ( $_.Name -eq "Agent errors for over-utilized server" ) `
 	-OR ( $_.Name -eq "Failed to send notification using server/device" ) `
 	-OR ( $_.Name -like "Gateway * Monitoring Alert" ) `
 	-OR ( $_.Name -eq "IP address conflict" ) `
@@ -1981,14 +2090,15 @@ $SCOMAdminRulesToClose = get-scomalert -ResolutionState (0..254) | ? { $_.TimeRa
 	-OR ( $_.Name -like "Cluster Role*" ) `
 	-OR ( $_.Name -like "*DailyTasks*" ) `
 	-OR ( $_.Name -like "*DailyTasks McAfee*" ) `
+	-OR ( $_.Name -like "Dell OMS*" ) `
 	-OR ( $_.Name -like "*McAfee*" ) `
 	-OR ( $_.Name -like "*Tangible*" ) `
 	-OR ( $_.Name -like "*Tanium EventID7031 Rule Alert" ) `
-	-OR ( $_.Name -like "*Remedy*" ) `
+	-OR ( $_.Name -like "*ServiceNow*" ) `
 	-OR ( $_.Name -like "Proactive DC NetLogon*" ) `
 	-OR ( $_.Name -like "Proactive*" ) `
 	-OR ( $_.Name -eq "Power Shell Script failed to run" ) `
-	} 
+	}
 
 $SCOMAdminRulesToClose.Count
 
@@ -2046,7 +2156,7 @@ if ( $Test -gt 0 )
 				#if ( $UnhealthyOLDMonitor.AvailabilityLastModified -lt $Age )
 				if ( $UnhealthyOLDMonitor.StateLastModified -lt $Age )
 					{
-					#$UnhealthyMonitors += $ActiveMonitors.Count					
+					#$UnhealthyMonitors += $ActiveMonitors.Count
 					#UnhealthyOLDMonitor | select AvailabilityLastModified,Path,DisplayName
 					#$UnhealthyOLDMonitor.Count
 					#write-host "Found" + $UnhealthyOLDMonitor.Count + "unhealthy monitor beyond" $Age "days."
@@ -2056,10 +2166,10 @@ if ( $Test -gt 0 )
 						foreach ( $ActiveMonitor in $UnhealthyOLDMonitor )
 							{
 							# Debug
-							$ActiveMonitor.ID				
+							$ActiveMonitor.ID
 							write-host " Resetting Health State on '" + $ActiveMonitor.FullName + "'" 
 							write-host ""
-							$ActiveMonitor.ResetMonitoringState($ActiveMonitor)
+							$ActiveMonitor.ResetMonitoringState($ActiveMonitor.ID)
 							}
 						}
 					}
@@ -2080,7 +2190,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Proactive NOSC Daily Tasks Daily 
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOM Admin Alerts Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -2121,7 +2231,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather LongRunning scripts since last report run
@@ -2135,7 +2245,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "540"
 #=================================================================================
 
@@ -2149,7 +2259,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin LongrunningScripts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -2328,7 +2438,7 @@ get-scomalert -name "Proactive NOSC DailyTasks DailySummary SCOMAdmin Longrunnin
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin LongrunningScripts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -2369,7 +2479,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather ScriptError scripts since last report run
@@ -2383,7 +2493,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "540"
 #=================================================================================
 
@@ -2397,7 +2507,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin ScriptErrors Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -2440,7 +2550,8 @@ $ScriptErrorsReport = @()
 # Debug (40s on one env)
 # date
 $ScriptErrors  = get-eventlog -LogName "Operations Manager" -Source "Health Service Modules" -after $Time `
-	| ? { ( $_.EventID -eq "22406" ) `
+	| ? { ( $_.EventID -eq "22402" ) `
+	-OR ( $_.EventID -eq "22406" ) `
 	-OR ( $_.EventID -eq "31551" ) `
 	-OR ( $_.EventID -eq "31552" ) `
 	-OR ( $_.EventID -eq "31553" ) `
@@ -2455,10 +2566,18 @@ $ScriptErrors  = get-eventlog -LogName "Operations Manager" -Source "Health Serv
 # Breakdown of events
 #=========================================
 
+# Operations Manager Event ID's 22402, 22406 for PoSH module events
+#===================================
+
+$PoSHModuleEvents = $ScriptErrors | where { ( $_.EventID -eq "22402" ) -OR ( $_.EventID -eq "22406" ) }  
+
+$PoSHModuleEvents | sort -property Message -uniq
+
+
 # Operations Manager Event ID 31551
 #===================================
-# Unable to connect to SQL$ScriptErrors
-$SQLConnectErrors =  $ScriptErrors | ? { ( $_.Message -like "*Could not open a connection to SQL Server*" ) `
+# Unable to connect to SQL $ScriptErrors
+$SQLConnectErrors =  $ScriptErrors | where { ( $_.Message -like "*Could not open a connection to SQL Server*" ) `
 	}
 #$SQLConnectErrors.Count
 
@@ -2586,6 +2705,7 @@ if ( $ScriptErrors.Count -gt 0 )
 	$ScriptErrorsReport += "#"
 	$ScriptErrorsReport += "# Breakdown of alerts"
 	$ScriptErrorsReport += "#========================================================"
+	$ScriptErrorsReport += "# 'PowerShell Module Events = $($PoSHModuleEvents.Count)"
 	$ScriptErrorsReport += "# 'Cannot access destination table' alerts = $($TableAccess.Count)"
 	$ScriptErrorsReport += "# 'Could not open a connection to SQL Server' alerts = $($SQLConnectErrors.Count)"
 	$ScriptErrorsReport += "# 'Login failed for user' alerts = $($LoginFailed.Count)"
@@ -2600,6 +2720,15 @@ if ( $ScriptErrors.Count -gt 0 )
 	$ScriptErrorsReport += "#"
  	$ScriptErrorsReport += "# Breakdown of events - most will be single (one or 1 ) event details"
 	$ScriptErrorsReport += "#===================================================================="
+	$ScriptErrorsReport += ""
+
+	if ( $PoSHModuleEvents.Count -gt 0 )
+		{
+		$ScriptErrorsReport += "# PowerShell Module Event details - unique Message(s)"
+		$ScriptErrorsReport += "#======================================="
+		$ScriptErrorsReport += ($PoSHModuleEvents | sort -property Message -uniq).Message
+		$ScriptErrorsReport += ""
+		}
 
 	if ( $TableAccess.Count -gt 0 )
 		{
@@ -2708,7 +2837,7 @@ get-scomalert -name "Proactive NOSC DailyTasks DailySummary SCOMAdmin ScriptErro
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin ScriptErrors Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -2749,7 +2878,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
                 </Scheduler>
               </DataSource>
               <ProbeAction ID="PA" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.Datasource.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.Datasource.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather alerts with updates to TicketID, Owner, Resolution State since last report run
@@ -2763,7 +2892,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.Datasource.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.Datasource.v1057.ps1"
 $EventID = "541"
 #=================================================================================
 
@@ -2777,7 +2906,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin AlertUpdates Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -2816,47 +2945,47 @@ $AlertUpdatesReport = @()
 # Gather scripts to check since last report
 
 # Debug
-#$GatherRemedyTickets = get-scomalert -ResolutionState (0..254) | ? { $_.TicketID -ne $null } | select NetbiosComputerName,TicketID
+#$GatherServiceNowTickets = get-scomalert -ResolutionState (0..254) | ? { $_.TicketID -ne $null } | select NetbiosComputerName,TicketID
 
 # Get Ticket ID's
-$GatherRemedyTickets = get-scomalert -ResolutionState (0..254) | ? { $_.TicketID -ne $null }
-#$GatherRemedyTickets.Count
+$GatherServiceNowTickets = get-scomalert -ResolutionState (0..254) | ? { $_.TicketID -ne $null }
+#$GatherServiceNowTickets.Count
 
-# $TicketID = $GatherRemedyTickets | sort -property TicketID -desc -uniq
-$TicketID = $GatherRemedyTickets | sort -property TicketID -desc -uniq
+# $TicketID = $GatherServiceNowTickets | sort -property TicketID -desc -uniq
+$TicketID = $GatherServiceNowTickets | sort -property TicketID -desc -uniq
 #$TicketID | ft Name,TicketID
 #$TicketString = ($TicketID.TicketID).ToString()
 
-$NORemedyTickets = get-scomalert -ResolutionState (0..254) | ? { ( $_.TicketID -eq $null )  }
+$NOServiceNowTickets = get-scomalert -ResolutionState (0..254) | ? { ( $_.TicketID -eq $null )  }
 # Debug
-#$NORemedyTickets | select NetbiosComputerName,TicketID,Name
-#$NORemedyTickets.Count
+#$NOServiceNowTickets | select NetbiosComputerName,TicketID,Name
+#$NOServiceNowTickets.Count
 
-$NoTicketID = $NORemedyTickets | sort -property Name -desc -uniq
+$NoTicketID = $NOServiceNowTickets | sort -property Name -desc -uniq
 
 
 foreach ( $alert in $NoTicketID.Name )
 	{
 	#$alert #$ticket
-	if ( ($GatherRemedyTickets | ? { $_.Name -eq "$alert" } ).Count -eq 0 )
+	if ( ($GatherServiceNowTickets | ? { $_.Name -eq "$alert" } ).Count -eq 0 )
 		{
 		#write-host "#==========================="
-		#write-host "NO Remedy Ticket exists for $($alert)"
+		#write-host "NO ServiceNow Ticket exists for $($alert)"
 		#write-host "#==========================="
 		}
-	if ( ($GatherRemedyTickets | ? { $_.Name -eq "$alert" } ).Count -gt 0 )
+	if ( ($GatherServiceNowTickets | ? { $_.Name -eq "$alert" } ).Count -gt 0 )
 		{
-		#write-host "Remedy Ticket exists for $($alert)"
+		#write-host "ServiceNow Ticket exists for $($alert)"
 		#write-host "#==========================="
 		# Set proper resolution state
 		# Debug
 		#Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | get-scomalerthistory | ? { ( $_.ResolutionState -ne 0 ) `
 		#-AND ( $ResolutionState -ne 255 ) } | ft TimeModified,ResolutionState,Name,Comments
 		#
-		#$GatherRemedyTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) }
+		#$GatherServiceNowTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) }
 
 		# Look for unique tickets
-		$TicketAlert = $GatherRemedyTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) } | sort -uniq
+		$TicketAlert = $GatherServiceNowTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) } | sort -uniq
 
 		# Debug - display in table
 		#$TicketAlert | ft TicketID,Owner,ResolutionState,Name -auto
@@ -2887,19 +3016,20 @@ foreach ( $alert in $NoTicketID.Name )
 
 
 
+
 # Create report
 #==============================
 $AlertUpdatesReport = @()
 
 # Check for alerts
-if ( $NORemedyTickets.Count -eq 0 )
+if ( $NOServiceNowTickets.Count -eq 0 )
 	{
 	$Message = "ZERO Proactive DailyTasks SCOMAdmin AlertUpdates report for date ($date)"
 	$AlertUpdatesReport += "ZERO Proactive DailyTasks SCOMAdmin AlertUpdates report for date ($date)"
 	$momapi.LogScriptEvent($ScriptName,$EventID,0,"$Message")
 	}
 
-if ( $NORemedyTickets.Count -gt 0 )
+if ( $NOServiceNowTickets.Count -gt 0 )
 	{
 	#
 	# Show Alerts by Time Raised,NetBiosComputerName,Message
@@ -2908,16 +3038,158 @@ if ( $NORemedyTickets.Count -gt 0 )
 	$AlertUpdatesReport += "Proactive DailyTasks SCOMAdmin AlertUpdates report for date $($date)"
 	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "# NOSC created tickets total unique = $($TicketID.Count)"
-	$AlertUpdatesReport += "# Alerts without Remedy Tickets = $($NORemedyTickets.Count)"
+	$AlertUpdatesReport += "# Alerts without ServiceNow Tickets = $($NOServiceNowTickets.Count)"
 	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "# Alert names with tickets"
 	$AlertUpdatesReport += "#==========================================="
-	#$AlertUpdatesReport += $TicketID | select TicketID,Name | out-string
-	$AlertUpdatesReport += $TicketID | ft TicketID,NetbiosComputerName,Name -auto -wrap | out-string
+	if ( ( $TicketID | where { $_.Name -eq "Certificate lifespan alert" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Certificate expiring alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Certificate lifespan alert" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -like "Dell OMS*" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Dell OMS hardware alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "Dell OMS*" } | fl TicketID,Owner,MonitoringObjectDisplayName | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Failed to connect to Computer" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Failed to connect to Computer"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Failed to connect to Computer" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Logical Disk Free Space is low alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } | ft TicketID,Owner,NetbiosComputerName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MCM Site to Site alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } ).Count -gt 0 )
+		{ 
+		$AlertUpdatesReport += "# MSSQL on Windows: DB Engine is in unhealthy state"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MSSQL on Windows: SQL Server service stopped"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "No ping reply" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# No ping reply"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "No ping reply" } | ft TicketID,Owner,NetbiosComputerName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	
+	if ( ($TicketID | where { $_.Name -eq "Windows Service Stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Windows Service Stopped alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Windows Service Stopped" | ft TicketID,Owner,NetbiosComputerName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+
+
+	# Remaining
+	$Remaining = $TicketID | where { ( $_.Name -notlike "Certificate lifespan alert" ) `
+		-AND ( $_.Name -notlike "Dell OMS*" ) `
+		-AND ( $_.Name -ne "Failed to connect to Computer" ) `
+		-AND ( $_.Name -ne "Logical Disk Free Space is low" ) `
+		-AND ( $_.Name -notlike "MCM * Site to * Site * Not Working" ) `
+		-AND ( $_.Name -ne "MSSQL on Windows: DB Engine is in unhealthy state" ) `
+		-AND ( $_.Name -ne "MSSQL on Windows: SQL Server service stopped" ) `
+		-AND ( $_.Name -ne "No ping reply" ) `
+		-AND ( $_.Name -ne "Windows Service Stopped" ) `
+		}
+
+	if ( $Remaining.Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Certificate expiring incidents"
+		$AlertUpdatesReport += $Remaining | fl TicketID,Owner,NetBiosComputerName,MonitoringObjectDisplayName,Name -auto -wrap
+		$AlertUpdatesReport += ""
+		}
+		
+
+	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "# Alert Details"
 	$AlertUpdatesReport += "#==========================================="
-	$AlertUpdatesReport += $TicketID | fl TicketID,NetbiosComputerName,MonitoringObjectDisplayName,Name | out-string
+
+	if ( ( $TicketID | where { $_.Name -eq "Certificate lifespan alert" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Certificate expiring incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Certificate lifespan alert" | fl TicketID,Owner,MonitoringObjectDisplayName | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -like "Dell OMS*" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Dell OMS hardware incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "Dell OMS*" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "Failed to connect to Computer" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Failed to connect to Computer incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Failed to connect to Computer" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Logical Disk Free Space is low incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } | fl TicketID,Owner,NetbiosComputerName,MonitoringObjectName,Parameters -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MCM Site to Site incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } ).Count -gt 0 )
+		{ 
+		$AlertUpdatesReport += "# MSSQL on Windows: DB Engine is in unhealthy state incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MSSQL on Windows: SQL Server service stopped incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "No ping reply" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# No ping reply incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "No ping reply" } | fl TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Windows Service Stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Windows Service Stopped incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Windows Service Stopped" } | ft TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Windows Service Stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Windows Service Stopped incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Windows Service Stopped" } | ft TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+
+	# Remaining
+	$AlertUpdatesReport += "# Remaining incidents NOT in above"
+	$AlertUpdatesReport += $Remaining | ft TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+	$AlertUpdatesReport += ""
+
 	$AlertUpdatesReport += "#===================================================================="
 	}
 
@@ -2958,7 +3230,7 @@ get-scomalert -name "Proactive NOSC DailyTasks DailySummary SCOMAdmin AlertUpdat
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin AlertUpdates Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
 </ScriptBody>
@@ -2986,7 +3258,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Expiring Certificate Alerts on demand task
@@ -3000,7 +3272,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.ExpiringCertsAlerts.Report.Script.WA.v1057.ps1"
 $EventID = "557"
 #=================================================================================
 
@@ -3015,7 +3287,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"ExpiringCertsAlerts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -3104,7 +3376,7 @@ if ( $Test -gt 0 )
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"ExpiringCertsAlerts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -3130,7 +3402,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Logical Disk Free space is low monitors and alert daily
@@ -3144,7 +3416,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.LogicalDiskFreeSpaceAlerts.Report.Script.WA.v1057.ps1"
 $EventID = "551"
 #=================================================================================
 
@@ -3158,7 +3430,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"LogicalDisk FreeSpace Alerts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -3211,9 +3483,29 @@ IF ($Test -gt 0)
 	# Gather Details section
 	$Details = get-scomalert -ResolutionState (0..254) -name "Logical disk Free space is low" | fl NetbiosComputerName,MonitoringObjectName,Parameters,Description | out-string
 
-	$Summary
-	write-host ""
-	$Details
+	#$Summary
+	#write-host ""
+	#$Details
+
+	$SummaryReport = @()
+
+	$SummaryReport += $Message
+	$SummaryReport += ""
+	$SummaryReport += "# Alert Count: $($Test)"
+	$SummaryReport += ""
+	$SummaryReport += $Message
+	$SummaryReport += ""
+	$SummaryReport += "# Summary:"
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += $Summary
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += ""
+	$SummaryReport += "# Details"
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += $Details
+	$SummaryReport += "#========================================================================="
+	$SummaryReport += ""
+
 
 	$momapi.LogScriptEvent($ScriptName,$EventID,0,"$Message`n`n$Summary`n`n$Details")
 
@@ -3249,7 +3541,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"LogicalDisk FreeSpace Alerts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -3275,7 +3567,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Pending Reboot Alerts and alert daily
@@ -3289,7 +3581,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.Report.Script.WA.v1057.ps1"
 $EventID = "553"
 #=================================================================================
 
@@ -3303,7 +3595,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -3486,7 +3778,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -3512,7 +3804,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather Pending Reboot Alerts and alert daily
@@ -3526,7 +3818,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.PendingRebootAlerts.ServerName.Report.Script.WA.v1057.ps1"
 $EventID = "559"
 #=================================================================================
 
@@ -3540,7 +3832,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts ServerName Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -3642,7 +3934,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"PendingReboot Alerts ServerName Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -3668,7 +3960,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.Report.Script.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.Report.Script.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather DailySummary report data for enterprise
@@ -3682,7 +3974,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.Report.Script.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.Report.Script.WA.v1057.ps1"
 $EventID = "555"
 #=================================================================================
 
@@ -3696,7 +3988,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"Daily Summary Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -3737,7 +4029,7 @@ if ( (get-date).DayOfWeek -eq "Monday" )
 
 # Unhealthy Servers with performance issues in past 24 hours
 #============================================================
-$UnhealthyServerAlerts = get-scomalert  -ResolutionState (0..254) | ? { ( $_.Name -eq "Memory Pages Per Second is too High." ) `
+$UnhealthyServerAlerts = get-scomalert -ResolutionState (0..254) | ? { ( $_.Name -eq "Memory Pages Per Second is too High." ) `
 	-OR ( $_.Name -eq "Percentage of Committed Memory in Use is too high" ) `
 	-OR ( $_.Name -eq "System Center Management Health Service Unloaded System Rule(s)" ) `
 	-OR ( $_.Name -eq "Total CPU Utilization Percentage is too high" ) `
@@ -3750,40 +4042,64 @@ $Performance = $UnhealthyServerAlerts | sort -property NetbiosComputername -uniq
 #$Performance
 
 
-# Figure out Remedy tickets	for report
-#date
-$AllRemedyTix = get-scomalert  -ResolutionState (0..254) | ? { ($_.TicketID -ne $null ) -AND ( $_.TimeRaised -gt $Time ) }
-#$AllRemedyTix = $AllRemedyTix | select NetBiosComputerName,TicketID,TimeRaised,Name,Description -auto
+
+# Figure out ServiceNow tickets	for report
+#
+$AllServiceNowTix = get-scomalert | where { ($_.TicketID -ne $null ) -AND ( $_.TimeRaised -gt $Time ) }
+#$AllServiceNowTix = $AllServiceNowTix | FT NetBiosComputerName,TicketID,TimeRaised,Owner,Name,Description -auto -wrap
 # date
+# $AllServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
 
 #
-# Open Remedy Tickets
-# date
-$RemedyTix = $AllRemedyTix }
-#date
-# $RemedyTix = get-scomalert | ? { ( $_.TicketID -ne $null ) `
-#	-AND ( $_.TimeRaised -gt $Time ) 
-#	}
+# Open ServiceNow Tickets
+$OpenServiceNowTix = $AllServiceNowTix | ? { ($_.ResolutionState -ne "255" ) }
+$ClosedServiceNowTix = get-scomalert -ResolutionState 255 | where { ($_.TicketID -ne $null ) }
+# $ClosedServiceNowTix.Count
 
+
+# Create array
 $Tickets = @()
 
-$Tickets += "Closed alerts with same alert name" 
 
-foreach ($alert in ($RemedyTix.Name |sort -uniq) )
+if ( $AllServiceNowTix.Count -gt 0 )
 	{
-	#$alert
-	$Tickets += $alert
+	$Tickets += "ServiceNow Tickets since the last report"
+	$Tickets += "#============================================================"
+	$Tickets += $AllServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+	$Tickets += "#============================================================"
 	$Tickets += ""
-	$Tickets +=	$($AllRemedyTix | ? { ( $_.Name -eq $alert ) } ).Count
-	$Tickets +=	$AllRemedyTix | ? { ( $_.Name -eq $alert ) } | sort -property Name | select TicketID,NetbiosComputername,Name
-	$Tickets += "#============================================================" 
+	}
+
+if ( $OpenServiceNowTix.Count -gt 0 )
+	{
+	$Tickets += "Open Alerts with ServiceNow tickets"
+	$Tickets += "#============================================================"
+	$Tickets += $OpenServiceNowTix | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+	$Tickets += "#============================================================"
+	$Tickets += ""
+	}
+	
+if ( $ClosedServiceNowTix.Count -gt 0 )
+	{
+	$Tickets += "Closed alerts with same alert name"
+	$Tickets += ""
+	
+	foreach ($alert in ($ClosedServiceNowTix.Name |sort -uniq ) )
+		{
+		$Tickets += "#============================================================"
+		$Tickets += $alert
+		$Tickets += ""
+		$Tickets +=	$($AllServiceNowTix | where { ( $_.Name -eq $alert ) } ).Count
+		$Tickets +=	$AllServiceNowTix | where { ( $_.Name -eq $alert ) } | sort -property Name | FT MonitoringObjectDisplayName,TicketID,TimeRaised,Owner,Name -auto -wrap
+		$Tickets += "#============================================================"
+		}
 	}
 
 $Tickets = $Tickets | out-string
 
-$OpenTix = $RemedyTix | select NetBiosComputerName,TicketID,TimeRaised,Name
-#$OpenTix  | out-string
-  
+
+
+
 $UHSAMessage = @()
 if ( $UnhealthyServerAlerts.Count -eq 0 )
 	{
@@ -3799,30 +4115,23 @@ if ( $UnhealthyServerAlerts.Count -gt 0 )
 	$UHSAMessage += ""
 	}
 
-if ( $RemedyTix.Count -eq 0 )
+if ( $ServiceNowTix.Count -eq 0 )
 	{
 	$UHSAMessage += ""
-	$UHSAMessage += "ZERO Remedy Tickets since last report run"	
+	$UHSAMessage += "ZERO ServiceNow Tickets since last report run"	
 	$UHSAMessage += ""
 	}
 
-if ( $RemedyTix.Count -gt 0 )
+if ( $ServiceNowTix.Count -gt 0 )
 	{
 	$UHSAMessage += ""
-	$UHSAMessage += "# Open issues with Remedy tickets"
-	$UHSAMessage += "#============================================================"
-	$UHSAMessage += $OpenTix
-	$UHSAMessage += "#============================================================"
-	$UHSAMessage += "#"
-	$UHSAMessage += "# Details from past tickets"
-	$UHSAMessage += "#============================================================"
 
-	if ( $AllRemedyTix.Count -lt 10 )
+	if ( $AllServiceNowTix.Count -lt 10 )
 		{
 		$UHSAMessage += $Tickets
 		$UHSAMessage += ""
 		}
-	if ( $AllRemedyTix.Count -gt 10 )
+	if ( $AllServiceNowTix.Count -gt 10 )
 		{
 		$UHSAMessage += "More than ten (10) open tickets"
 		#$UHSAMessage +=$Tickets
@@ -3900,7 +4209,7 @@ $UHSAMessage = $UHSAMessage | out-string
 # Prod
 #$Test = (get-SCOMAlert -name "PROACTIVE - Server restart pending detected" -ResolutionState (0..254) ).Count
 
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"`n Gather Alerts for date ($date). `n Number of alerts ($Test).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"Gather Alerts for date ($date). `n Number of alerts ($Test).")
 
 # Pending reboots
 #  Gather Summary section
@@ -4185,10 +4494,17 @@ if ( $NotMonitored.Count -gt 0 )
 	}
 
 # Trim empty lines
-$TotalAgents = $TotalAgentIssues | ? { $_ -and $_.Trim() }
+$TotalAgents = $TotalAgentIssues | sort -unique | where { $_ -and $_.Trim() }
+
 #$TotalAgents
 # Trim where clause | ? { $_ -and $_.Trim() }
-$FinalCompare = compare-object -ReferenceObject $MM -DifferenceObject $TotalAgents
+
+if ( $MM.Count -ne 0 ) { $FinalCompare = compare-object -ReferenceObject $MM -DifferenceObject $TotalAgents }
+if ( $MM.Count -eq 0 )
+	{
+	$FinalCompare = $TotalAgents
+	}
+
 
 
 #======================================================================
@@ -4210,13 +4526,13 @@ if ( $TotalAgents.Count -gt 0)
 	$UnhealthyAgents += ""
 	$UnhealthyAgents += "# NOT monitored server detail"
 	$UnhealthyAgents += "#============================"
-	if ( $TotalAgent.Count -lt 28)
+	if ( $TotalAgent.Count -lt 25)
 		{
 		$UnhealthyAgents += $TotalAgents
 		}
-	if ( $TotalAgentIssues.Count -gt 28)
+	if ( $TotalAgentIssues.Count -gt 25)
 		{
-		$UnhealthyAgents += "MORE than 25 servers NOT monitored"
+		$UnhealthyAgents += "MORE than 20 servers NOT monitored"
 		}
 	$UnhealthyAgents += "#=================================================="
 	$UnhealthyAgents += ""
@@ -4324,7 +4640,7 @@ if ( $LDSTest.Count -gt 0 )
 # Certificates about to expire/expired
 #===============================================
 
-$ExpCert = get-scomalert -ResolutionState (0..254) -Name "Certificate lifespan alert" )
+$ExpCert = get-scomalert -ResolutionState (0..254) | ? { ($_.Name -eq "Certificate lifespan alert" ) }
 
 $EXPAMessage = @()
 
@@ -4354,7 +4670,7 @@ if ( $ExpCert.Count -gt 0 )
 #
 # DC Key/important alerts
 #============================================================
-$DCAlerts = get-scomalert  -ResolutionState (0..254) | ? { ($_.Name -eq "The Infrastructure Master Ping Availability health monitor has failed." ) `
+$DCAlerts = get-scomalert -ResolutionState (0..254) | ? { ($_.Name -eq "The Infrastructure Master Ping Availability health monitor has failed." ) `
 	-OR ($_.Name -eq "The Infrastructure Master LDAP Bind Availability health monitor has failed." ) `
 	-OR ($_.Name -eq "The PDC LDAP Bind Availability health monitor has failed." ) `
 	-OR ($_.Name -eq "The PDC Ping Availability health monitor has failed." ) `
@@ -4390,7 +4706,7 @@ if ( $DCACount -eq 0 )
 
 if ( $DCACount -gt 0 )
 	{
-	write-host -f yellow "Servers with more than 5 alerts"
+	write-host -f yellow "`n# Servers with more than 5 alerts"
 	$DCAMessage += "# DC Alerts"
 	$DCAMessage += "#"
 	$DCAMessage += "# Alert Count = $DCACount"
@@ -4442,7 +4758,7 @@ $DCAMessage = $DCAMessage | out-string
 #
 # DNS Alerts
 #============================================================
-$DNSAlerts = get-scomalert  -ResolutionState (0..254) | ? { ($_.Name -eq "Windows DNS - NSLookup Failed for Zone's NS Record" ) `
+$DNSAlerts = get-scomalert -ResolutionState (0..254) | ? { ($_.Name -eq "Windows DNS - NSLookup Failed for Zone's NS Record" ) `
 	-OR ($_.Name -eq "Windows DNS - Conditional Forward Forwarder - All IP Addresses Failing NSLookup" ) `
 	-OR ($_.Name -eq "Windows DNS - NSLookup Failed Against a Local Address" ) `
 	-OR ($_.Name -eq "Windows DNS - WMI Validation Failed" ) `
@@ -4467,7 +4783,7 @@ if ( $DNSACount -eq 0 )
 
 if ( $DNSACount -gt 0 )
 	{
-	write-host -f yellow "Servers with more than 5 alerts"
+	write-host -f yellow "`n# Servers with more than 5 alerts"
 	$DNSAMessage = @()
 	$DNSAMessage += ""
 	$DNSAMessage += "Alert Count = $DNSACount"
@@ -4502,7 +4818,7 @@ if ( $DNSACount -gt 0 )
 
 # Group Policy issues
 #============================================================
-$GPAlerts = get-scomalert  -ResolutionState (0..254) | ? { ($_.Name -eq "Group Policy Client Service Not Running" ) `
+$GPAlerts = get-scomalert -ResolutionState (0..254) | ? { ($_.Name -eq "Group Policy Client Service Not Running" ) `
 	-OR ( $_.Name -eq "The Group Policy Update health monitor has failed." ) `
 	} | ? { ( $_.TimeRaised -ge $Time ) }
 
@@ -4588,7 +4904,7 @@ $bag
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"Daily Summary Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -4614,7 +4930,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather DailySummary report data for enterprise
@@ -4628,7 +4944,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.Report.Script.Alert.Rule.WA.v1057.ps1"
 $EventID = "559"
 #=================================================================================
 
@@ -4642,7 +4958,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOM Admin Alerts Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -4675,8 +4991,9 @@ $DSMessage = "Proactive Daily Summary SCOM Admin Alerts for date ($date)."
 #
 # Clean up old reports
 #===============================================
-$OldReports = get-scomalert  -ResolutionState (0..254) | ? { ( $_.Name -like "ADDSAlerts*" ) `
+$OldReports = get-scomalert -ResolutionState (0..254) | ? { ( $_.Name -like "ADDSAlerts*" ) `
 	-OR ( $_.Name -like "*DailyTasks*" ) `
+	-OR ( $_.Name -like "Dell OMS*" ) `
 	-OR ( $_.Name -like "*McAfee*" ) `
 	-OR ( $_.Name -like "Microsoft Windows DCOM*" ) `
 	-OR ( $_.Name -like "Microsoft Windows Server AD*" ) `
@@ -4686,10 +5003,10 @@ $OldReports = get-scomalert  -ResolutionState (0..254) | ? { ( $_.Name -like "AD
 	-OR ( $_.Name -like "Proactive DC NetLogon*" ) `
 	-OR ( $_.Name -like "Proactive DFSR 5008*" ) `
 	-OR ( $_.Name -like "Proactive NOSC DailyTasks*" ) `
-	-OR ( $_.Name -like "*Remedy*" ) `
+	-OR ( $_.Name -like "*ServiceNow*" ) `
 	-OR ( $_.Name -like "*Tangible ProV ProVService Report*" ) `
 	-OR ( $_.Name -like "*Tanium EventID7031 Rule Alert" ) `
-	}
+	} | ? { $_.ResolutionState -ne 255 }
 	#-OR ( $_.Name -like "Proactive*" ) `
 	
 $OldReports = $OldReports | ? { $_.TimeRaised -ge $Time }
@@ -4703,7 +5020,7 @@ if ( $OldReports.Count -gt 0 )
 
 # Add ATQ ticket ID
 # The total number of ATQ threads in use has exceeded one or more thresholds over multiple samples.
-#$ATQ = get-scomalert  -ResolutionState (0..254) | ? { ( $_.Name -eq "The total number of ATQ threads in use has exceeded one or more thresholds over multiple samples." ) `
+#$ATQ = get-scomalert -ResolutionState (0..254) -Name "The total number of ATQ threads in use has exceeded one or more thresholds over multiple samples." ) `
 #	-AND ( $_.TimeRaised -gt $Time ) `
 #	-AND ( $_.ResolutionState -ne 255 ) `
 #	}
@@ -4718,7 +5035,7 @@ if ( $OldReports.Count -gt 0 )
 # Agents with alert counts in past 24 hours
 #===============================================
 
-$UnhealthyAgentAlerts = get-scomalert -ResolutionState (0..254) | ? { $_.TimeRaised -gt $Time } | ? { ( $_.Name -eq "Alert generation was temporarily suspended due to too many alerts." ) `
+$UnhealthyAgentAlerts = get-scomalert -ResolutionState (0..254)  | ? { $_.TimeRaised -gt $Time } | ? { ( $_.Name -eq "Alert generation was temporarily suspended due to too many alerts." ) `
 	-OR ( $_.Name -eq "Agent errors for over-utilized server" ) `
 	-OR ( $_.Name -eq "ATA Gateway Service Monitor Service Alert" ) `
 	-OR ( $_.Name -eq "DNS Reconnaissance Suspicious Activity" ) `
@@ -4739,6 +5056,40 @@ $UnhealthyAgentAlerts = get-scomalert -ResolutionState (0..254) | ? { $_.TimeRai
 	}
 
 
+# Break out Power Shell Script was dropped alerts
+
+$Dropped = $UnhealthyAgentAlerts | where { $_.Name -eq "Power Shell script was dropped" }
+
+# Test
+#$Dropped = Get-EventLog -logname "Operations Manager" | where { $_.EventID -eq 22411 }
+#$Dropped = $Dropped.Message
+
+$Workflows = @()
+
+if ( $Dropped.Count -gt 0 )
+	{
+	foreach ($LLine in $Dropped )
+		{
+		$Lmatch = $LLine |select-string -pattern ':'
+		if ($Lmatch)
+			{
+			#$Lmatch
+			$LLineSplit = $LLine.Split(":")
+			#$LLineSplit[2]
+			#$LLineSplit[1] #; $LLineSplit[2]
+			#$LLineSplit[3]
+			$LLineSplit2 = $LLineSplit[2].Split(" ")
+			$LLineSplit2[1]
+			$Workflows += $LLineSplit2[1]
+			}
+		}
+	}
+
+$WorkflowOutput = $Workflows | sort -unique
+
+#$WorkflowOutput
+
+
 #
 # Set up array for unhealthy agent report
 $UHAAMessage = @()
@@ -4757,27 +5108,45 @@ if ( $UnhealthyAgentAlerts.Count -gt 0 )
 	$UHAAMessage += "# Auto-closed monitors = $($UnhealthyMonitors.Count)"
 	$UHAAMessage += "# Auto-closed rules = $($SCOMAdminRulesToClose.Count)"
 	$UHAAMessage += ""
-	$UHAAMessage += "# Servers NOT being monitored correctly"
-	$UHAAMessage += "#======================================"
-	$UHAAMessage += "# Contain SCOM Agent workflow/powershell/WMI/service checks that alert with failures"
-	$UHAAMessage += "#==================================================================================="
 
-	foreach ( $Server in ($UnhealthyAgentAlerts.NetBiosComputerName | sort -unique ) )
+	if ( ($UnhealthyAgentAlerts | where { $_.Name -ne "Power Shell script was dropped" }).Count -gt 0 )
 		{
-		$Server
-		$Alerts = (($UnhealthyAgentAlerts.NetBiosComputerName) | ? { $_ -eq $server } ).Count
-		$UHAAMessage += "Server $($Server) has $($Alerts) alerts"
-		}
+		$UHAAMessage += "# Servers NOT being monitored correctly"
+		$UHAAMessage += "#======================================"
+		$UHAAMessage += "# Alerts contain SCOM Agent workflow/powershell/WMI/service checks that alert with failures"
+		$UHAAMessage += "#==================================================================================="
 
-	$UHAAMessage += ""
-	$UHAAMessage += "# Unhealthy Agent alert details"
-	$UHAAMessage += "#=============================="
-	$UHAAMessage += $UnhealthyAgentAlerts | select NetBiosComputerName,TimeRaised,Name
-	$UHAAMessage += "#=============================="
-	$UHAAMessage += ""
+		#foreach ( $Server in ($UnhealthyAgentAlerts.NetBiosComputerName | sort -unique ) )
+		#	{
+		#	$Server
+		#	$Alerts = (($UnhealthyAgentAlerts.NetBiosComputerName) | ? { $_ -eq $server } ).Count
+		#	$UHAAMessage += "Server $($Server) has $($Alerts) alerts"
+		#	}
+
+		if ( $WorkflowOutput.Count -gt 0 )
+			{
+			$UHAAMessage += ""
+			$UHAAMessage += "# Power Shell script was dropped alert details"
+			$UHAAMessage += "#=============================="
+			$UHAAMessage += $WorkflowOutput
+			$UHAAMessage += "#=============================="
+			}
+
+
+		$UHAAMessage += ""
+		$UHAAMessage += "# Remaining Unhealthy Agent alerts"
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += $UnhealthyAgentAlerts | where { $_.Name -ne "Power Shell script was dropped" } | sort -property Name -unique | select Name
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += "# Remaining Unhealthy Agent alert details"
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += $UnhealthyAgentAlerts | where { $_.Name -ne "Power Shell script was dropped" } | format-table TimeRaised,MonitoringObjectDisplayName,Name -auto -wrap
+		$UHAAMessage += "#=============================="
+		$UHAAMessage += ""
+		}
 	}
 
-	#$UHAAMessage 
+	#$UHAAMessage
 
 	$UHAAMessage = $UHAAMessage | out-string
 
@@ -4789,7 +5158,7 @@ if ( $UnhealthyAgentAlerts.Count -gt 0 )
 # Tally up all the property bags for datasource
 
 $Result = "GOOD"
-  
+
 # Log 
 $Summary = "$UHAAMessage `n `nDisclaimer:  This daily summary report is to document the manual tasks used by NOSC to check AD and AD Replication health, Pending Reboot Report, Logical Disk errors,Expiring Certificates, Unhealthy Server/Agents, Unhealthy agent workflow/script alerts, and Servers in Maintenance Mode"
 $Summary
@@ -4812,14 +5181,14 @@ $bag
 # (Rules) Set array for closing rules
 $SCOMAdminRulesToClose = @()
 
-$SCOMAdminRulesToClose = get-scomalert -ResolutionState (0..254)  | ? { $_.TimeRaised -gt $Time } | ? { ( $_.Name -like "ADDSAlerts*" ) `
+$SCOMAdminRulesToClose = get-scomalert -ResolutionState (0..254) | ? { $_.TimeRaised -gt $Time } | ? { ( $_.Name -like "*ADDSAlerts*" ) `
 	-OR ( $_.Name -eq "AD CS Program Resource Availability - CA service stopped" ) `
+	-OR ( $_.Name -eq "Agent errors for over-utilized server" ) `
 	-OR ( $_.Name -eq "Alert generation was temporarily suspended due to too many alerts." ) `
 	-OR ( $_.Name -eq "Alert on Failure to Create PowerShell Run space for Power Shell Script" ) `
 	-OR ( $_.Name -eq "All Management Servers Pool Unavailable." ) `
 	-OR ( $_.Name -eq "An error occurred during computer verification from the discovery wizard" ) `
 	-OR ( $_.Name -eq "cluster service has determined that this node does not have the latest copy of cluster configuration data" ) `
-	-OR ( $_.Name -eq "Agent errors for over-utilized server" ) `
 	-OR ( $_.Name -eq "Failed to send notification using server/device" ) `
 	-OR ( $_.Name -like "Gateway * Monitoring Alert" ) `
 	-OR ( $_.Name -eq "IP address conflict" ) `
@@ -4834,10 +5203,11 @@ $SCOMAdminRulesToClose = get-scomalert -ResolutionState (0..254)  | ? { $_.TimeR
 	-OR ( $_.Name -like "Cluster Role*" ) `
 	-OR ( $_.Name -like "*DailyTasks*" ) `
 	-OR ( $_.Name -like "*DailyTasks McAfee*" ) `
+	-OR ( $_.Name -like "Dell OMS*" ) `
 	-OR ( $_.Name -like "*McAfee*" ) `
 	-OR ( $_.Name -like "*Tangible*" ) `
 	-OR ( $_.Name -like "*Tanium EventID7031 Rule Alert" ) `
-	-OR ( $_.Name -like "*Remedy*" ) `
+	-OR ( $_.Name -like "*ServiceNow*" ) `
 	-OR ( $_.Name -like "Proactive DC NetLogon*" ) `
 	-OR ( $_.Name -like "Proactive*" ) `
 	-OR ( $_.Name -eq "Power Shell Script failed to run" ) `
@@ -4899,7 +5269,7 @@ if ( $Test -gt 0 )
 				#if ( $UnhealthyOLDMonitor.AvailabilityLastModified -lt $Age )
 				if ( $UnhealthyOLDMonitor.StateLastModified -lt $Age )
 					{
-					#$UnhealthyMonitors += $ActiveMonitors.Count					
+					#$UnhealthyMonitors += $ActiveMonitors.Count
 					#UnhealthyOLDMonitor | select AvailabilityLastModified,Path,DisplayName
 					#$UnhealthyOLDMonitor.Count
 					#write-host "Found" + $UnhealthyOLDMonitor.Count + "unhealthy monitor beyond" $Age "days."
@@ -4909,10 +5279,10 @@ if ( $Test -gt 0 )
 						foreach ( $ActiveMonitor in $UnhealthyOLDMonitor )
 							{
 							# Debug
-							$ActiveMonitor.ID				
+							$ActiveMonitor.ID
 							write-host " Resetting Health State on '" + $ActiveMonitor.FullName + "'" 
 							write-host ""
-							$ActiveMonitor.ResetMonitoringState($ActiveMonitor)
+							$ActiveMonitor.ResetMonitoringState($ActiveMonitor.ID)
 							}
 						}
 					}
@@ -4933,7 +5303,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Proactive NOSC Daily Tasks Daily 
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOM Admin Alerts Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -4959,7 +5329,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather LongRunning scripts since last report run
@@ -4973,7 +5343,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.LongrunningScripts.Report.Script.Alert.Rule.WA.v1057.ps1"
 $EventID = "540"
 #=================================================================================
 
@@ -4987,7 +5357,7 @@ $whoami = whoami
 # Load MOMScript API
 $momapi = New-Object -comObject MOM.ScriptAPI
 #Log script event that we are starting task
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script is starting.  Running as ($whoami).")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin LongrunningScripts Report Script is starting.  Running as ($whoami).")
 #=================================================================================
 
 
@@ -5166,7 +5536,7 @@ get-scomalert -name "Proactive NOSC DailyTasks DailySummary SCOMAdmin Longrunnin
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin LongrunningScripts Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -5192,7 +5562,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather ScriptErrors scripts since last report run
@@ -5206,7 +5576,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.ScriptErrors.Report.Script.Alert.Rule.WA.v1057.ps1"
 $EventID = "540"
 #=================================================================================
 
@@ -5263,7 +5633,8 @@ $ScriptErrorsReport = @()
 # Debug (40s on one env)
 # date
 $ScriptErrors  = get-eventlog -LogName "Operations Manager" -Source "Health Service Modules" -after $Time `
-	| ? { ( $_.EventID -eq "22406" ) `
+	| ? { ( $_.EventID -eq "22402" ) `
+	-OR ( $_.EventID -eq "22406" ) `
 	-OR ( $_.EventID -eq "31551" ) `
 	-OR ( $_.EventID -eq "31552" ) `
 	-OR ( $_.EventID -eq "31553" ) `
@@ -5278,10 +5649,18 @@ $ScriptErrors  = get-eventlog -LogName "Operations Manager" -Source "Health Serv
 # Breakdown of events
 #=========================================
 
+# Operations Manager Event ID's 22402, 22406 for PoSH module events
+#===================================
+
+$PoSHModuleEvents = $ScriptErrors | where { ( $_.EventID -eq "22402" ) -OR ( $_.EventID -eq "22406" ) }  
+
+$PoSHModuleEvents | sort -property Message -uniq
+
+
 # Operations Manager Event ID 31551
 #===================================
-# Unable to connect to SQL$ScriptErrors
-$SQLConnectErrors =  $ScriptErrors | ? { ( $_.Message -like "*Could not open a connection to SQL Server*" ) `
+# Unable to connect to SQL $ScriptErrors
+$SQLConnectErrors =  $ScriptErrors | where { ( $_.Message -like "*Could not open a connection to SQL Server*" ) `
 	}
 #$SQLConnectErrors.Count
 
@@ -5409,6 +5788,7 @@ if ( $ScriptErrors.Count -gt 0 )
 	$ScriptErrorsReport += "#"
 	$ScriptErrorsReport += "# Breakdown of alerts"
 	$ScriptErrorsReport += "#========================================================"
+	$ScriptErrorsReport += "# 'PowerShell Module Events = $($PoSHModuleEvents.Count)"
 	$ScriptErrorsReport += "# 'Cannot access destination table' alerts = $($TableAccess.Count)"
 	$ScriptErrorsReport += "# 'Could not open a connection to SQL Server' alerts = $($SQLConnectErrors.Count)"
 	$ScriptErrorsReport += "# 'Login failed for user' alerts = $($LoginFailed.Count)"
@@ -5423,6 +5803,15 @@ if ( $ScriptErrors.Count -gt 0 )
 	$ScriptErrorsReport += "#"
  	$ScriptErrorsReport += "# Breakdown of events - most will be single (one or 1 ) event details"
 	$ScriptErrorsReport += "#===================================================================="
+	$ScriptErrorsReport += ""
+
+	if ( $PoSHModuleEvents.Count -gt 0 )
+		{
+		$ScriptErrorsReport += "# PowerShell Module Event details - unique Message(s)"
+		$ScriptErrorsReport += "#======================================="
+		$ScriptErrorsReport += ($PoSHModuleEvents | sort -property Message -uniq).Message
+		$ScriptErrorsReport += ""
+		}
 
 	if ( $TableAccess.Count -gt 0 )
 		{
@@ -5557,7 +5946,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           <Composite>
             <MemberModules>
               <WriteAction ID="PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
-                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.WA.v1050.ps1</ScriptName>
+                <ScriptName>Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.WA.v1057.ps1</ScriptName>
                 <ScriptBody>
 #=================================================================================
 #  Script to gather alerts with updates to TicketID, Owner, Resolution State since last report run
@@ -5571,7 +5960,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
 #=================================================================================
 # Assign script name variable for use in event logging.
 # ScriptName should be the same as the ID of the module that the script is contained in
-$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.WA.v1050.ps1"
+$ScriptName = "Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.WA.v1057.ps1"
 $EventID = "541"
 #=================================================================================
 
@@ -5624,47 +6013,47 @@ $AlertUpdatesReport = @()
 # Gather scripts to check since last report
 
 # Debug
-#$GatherRemedyTickets = get-scomalert  -ResolutionState (0..254) | ? { $_.TicketID -ne $null } | select NetbiosComputerName,TicketID
+#$GatherServiceNowTickets = get-scomalert -ResolutionState (0..254) | ? { $_.TicketID -ne $null } | select NetbiosComputerName,TicketID
 
 # Get Ticket ID's
-$GatherRemedyTickets = get-scomalert  -ResolutionState (0..254) | ? { $_.TicketID -ne $null }
-#$GatherRemedyTickets.Count
+$GatherServiceNowTickets = get-scomalert -ResolutionState (0..254) | ? { $_.TicketID -ne $null }
+#$GatherServiceNowTickets.Count
 
-# $TicketID = $GatherRemedyTickets | sort -property TicketID -desc -uniq
-$TicketID = $GatherRemedyTickets | sort -property TicketID -desc -uniq
+# $TicketID = $GatherServiceNowTickets | sort -property TicketID -desc -uniq
+$TicketID = $GatherServiceNowTickets | sort -property TicketID -desc -uniq
 #$TicketID | ft Name,TicketID
 #$TicketString = ($TicketID.TicketID).ToString()
 
-$NORemedyTickets = get-scomalert -ResolutionState (0..254) | ? { ( $_.TicketID -eq $null ) }
+$NOServiceNowTickets = get-scomalert -ResolutionState (0..254) | ? { ( $_.TicketID -eq $null )  }
 # Debug
-#$NORemedyTickets | select NetbiosComputerName,TicketID,Name
-#$NORemedyTickets.Count
+#$NOServiceNowTickets | select NetbiosComputerName,TicketID,Name
+#$NOServiceNowTickets.Count
 
-$NoTicketID = $NORemedyTickets | sort -property Name -desc -uniq
+$NoTicketID = $NOServiceNowTickets | sort -property Name -desc -uniq
 
 
 foreach ( $alert in $NoTicketID.Name )
 	{
 	#$alert #$ticket
-	if ( ($GatherRemedyTickets | ? { $_.Name -eq "$alert" } ).Count -eq 0 )
+	if ( ($GatherServiceNowTickets | ? { $_.Name -eq "$alert" } ).Count -eq 0 )
 		{
 		#write-host "#==========================="
-		#write-host "NO Remedy Ticket exists for $($alert)"
+		#write-host "NO ServiceNow Ticket exists for $($alert)"
 		#write-host "#==========================="
 		}
-	if ( ($GatherRemedyTickets | ? { $_.Name -eq "$alert" } ).Count -gt 0 )
+	if ( ($GatherServiceNowTickets | ? { $_.Name -eq "$alert" } ).Count -gt 0 )
 		{
-		#write-host "Remedy Ticket exists for $($alert)"
+		#write-host "ServiceNow Ticket exists for $($alert)"
 		#write-host "#==========================="
 		# Set proper resolution state
 		# Debug
-		#Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | get-scomalerthistory `
+		#Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | get-scomalerthistory | ? { ( $_.ResolutionState -ne 0 ) `
 		#-AND ( $ResolutionState -ne 255 ) } | ft TimeModified,ResolutionState,Name,Comments
 		#
-		#$GatherRemedyTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) }
+		#$GatherServiceNowTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) }
 
 		# Look for unique tickets
-		$TicketAlert = $GatherRemedyTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) } | sort -uniq
+		$TicketAlert = $GatherServiceNowTickets | ? { ( $_.Name -eq "$alert" ) -AND ( $_.TicketID -ne $null ) } | sort -uniq
 
 		# Debug - display in table
 		#$TicketAlert | ft TicketID,Owner,ResolutionState,Name -auto
@@ -5674,23 +6063,25 @@ foreach ( $alert in $NoTicketID.Name )
 		[string]$TicketString = ($TicketAlert.TicketID).ToString()
 		
 		# Get Resolution State
-		#Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | get-scomalerthistory | ft TimeModified,ResolutionState,Name,Comments
+		#Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | get-scomalerthistory | ? { ( $_.ResolutionState -ne 0 ) `
+		#-AND ( $-.ResolutionState -ne 255 ) -AND  ( $_.ResolutionState -ne "Closed" ) } | ft TimeModified,ResolutionState,Name,Comments
 		#
 
 		$ResState =  Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | get-scomalerthistory | sort -property ResolutionState -uniq
 				#$ResState.ResolutionState
 		#$ResState
 		$ResolutionState = [INT]$ResState.ResolutionState.ToString()
-		
+
 		# Debug
 		# Update open alert
 		#$AlertName
 		# Set TicketID, Owner
-		Get-SCOMAlert -Name "$AlertName" -ResolutionState 0 | Set-SCOMAlert -ticketID $TicketString `
+		Get-SCOMAlert -Name "$AlertName" -ResolutionState (0..254) | Set-SCOMAlert -ticketID $TicketString `
 		-Owner "$TicketAlert.Owner"  -ResolutionState $ResolutionState `
 		-Comment "Automation - Set Ticket, Owner, Resolution state in current alert"
 		}
 }
+
 
 
 
@@ -5699,14 +6090,14 @@ foreach ( $alert in $NoTicketID.Name )
 $AlertUpdatesReport = @()
 
 # Check for alerts
-if ( $NORemedyTickets.Count -eq 0 )
+if ( $NOServiceNowTickets.Count -eq 0 )
 	{
 	$Message = "ZERO Proactive DailyTasks SCOMAdmin AlertUpdates report for date ($date)"
 	$AlertUpdatesReport += "ZERO Proactive DailyTasks SCOMAdmin AlertUpdates report for date ($date)"
 	$momapi.LogScriptEvent($ScriptName,$EventID,0,"$Message")
 	}
 
-if ( $NORemedyTickets.Count -gt 0 )
+if ( $NOServiceNowTickets.Count -gt 0 )
 	{
 	#
 	# Show Alerts by Time Raised,NetBiosComputerName,Message
@@ -5715,16 +6106,158 @@ if ( $NORemedyTickets.Count -gt 0 )
 	$AlertUpdatesReport += "Proactive DailyTasks SCOMAdmin AlertUpdates report for date $($date)"
 	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "# NOSC created tickets total unique = $($TicketID.Count)"
-	$AlertUpdatesReport += "# Alerts without Remedy Tickets = $($NORemedyTickets.Count)"
+	$AlertUpdatesReport += "# Alerts without ServiceNow Tickets = $($NOServiceNowTickets.Count)"
 	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "# Alert names with tickets"
 	$AlertUpdatesReport += "#==========================================="
-	#$AlertUpdatesReport += $TicketID | select TicketID,Name | out-string
-	$AlertUpdatesReport += $TicketID | ft TicketID,NetbiosComputerName,Name -auto -wrap | out-string
+	if ( ( $TicketID | where { $_.Name -eq "Certificate lifespan alert" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Certificate expiring alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Certificate lifespan alert" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -like "Dell OMS*" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Dell OMS hardware alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "Dell OMS*" } | fl TicketID,Owner,MonitoringObjectDisplayName | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Failed to connect to Computer" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Failed to connect to Computer"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Failed to connect to Computer" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Logical Disk Free Space is low alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } | ft TicketID,Owner,NetbiosComputerName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MCM Site to Site alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } ).Count -gt 0 )
+		{ 
+		$AlertUpdatesReport += "# MSSQL on Windows: DB Engine is in unhealthy state"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MSSQL on Windows: SQL Server service stopped"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } | ft TicketID,Owner,MonitoringObjectDisplayName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "No ping reply" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# No ping reply"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "No ping reply" } | ft TicketID,Owner,NetbiosComputerName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	
+	if ( ($TicketID | where { $_.Name -eq "Windows Service Stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Windows Service Stopped alerts"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Windows Service Stopped" | ft TicketID,Owner,NetbiosComputerName -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+
+
+	# Remaining
+	$Remaining = $TicketID | where { ( $_.Name -notlike "Certificate lifespan alert" ) `
+		-AND ( $_.Name -notlike "Dell OMS*" ) `
+		-AND ( $_.Name -ne "Failed to connect to Computer" ) `
+		-AND ( $_.Name -ne "Logical Disk Free Space is low" ) `
+		-AND ( $_.Name -notlike "MCM * Site to * Site * Not Working" ) `
+		-AND ( $_.Name -ne "MSSQL on Windows: DB Engine is in unhealthy state" ) `
+		-AND ( $_.Name -ne "MSSQL on Windows: SQL Server service stopped" ) `
+		-AND ( $_.Name -ne "No ping reply" ) `
+		-AND ( $_.Name -ne "Windows Service Stopped" ) `
+		}
+
+	if ( $Remaining.Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Certificate expiring incidents"
+		$AlertUpdatesReport += $Remaining | fl TicketID,Owner,NetBiosComputerName,MonitoringObjectDisplayName,Name -auto -wrap
+		$AlertUpdatesReport += ""
+		}
+		
+
+	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "#"
 	$AlertUpdatesReport += "# Alert Details"
 	$AlertUpdatesReport += "#==========================================="
-	$AlertUpdatesReport += $TicketID | fl TicketID,NetbiosComputerName,MonitoringObjectDisplayName,Name | out-string
+
+	if ( ( $TicketID | where { $_.Name -eq "Certificate lifespan alert" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Certificate expiring incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Certificate lifespan alert" | fl TicketID,Owner,MonitoringObjectDisplayName | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -like "Dell OMS*" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Dell OMS hardware incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "Dell OMS*" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "Failed to connect to Computer" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Failed to connect to Computer incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Failed to connect to Computer" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Logical Disk Free Space is low incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Logical Disk Free Space is low" } | fl TicketID,Owner,NetbiosComputerName,MonitoringObjectName,Parameters -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MCM Site to Site incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -like "MCM * Site to * Site * Not Working" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } ).Count -gt 0 )
+		{ 
+		$AlertUpdatesReport += "# MSSQL on Windows: DB Engine is in unhealthy state incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: DB Engine is in unhealthy state" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# MSSQL on Windows: SQL Server service stopped incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "MSSQL on Windows: SQL Server service stopped" } | fl TicketID,Owner,MonitoringObjectDisplayName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ( $TicketID | where { $_.Name -eq "No ping reply" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# No ping reply incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "No ping reply" } | fl TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Windows Service Stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Windows Service Stopped incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Windows Service Stopped" } | ft TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+	if ( ($TicketID | where { $_.Name -eq "Windows Service Stopped" } ).Count -gt 0 )
+		{
+		$AlertUpdatesReport += "# Windows Service Stopped incidents"
+		$AlertUpdatesReport += $TicketID | where { $_.Name -eq "Windows Service Stopped" } | ft TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+		}
+	$AlertUpdatesReport += ""
+
+	# Remaining
+	$AlertUpdatesReport += "# Remaining incidents NOT in above"
+	$AlertUpdatesReport += $Remaining | ft TicketID,Owner,NetbiosComputerName,Description -auto -wrap | out-string
+	$AlertUpdatesReport += ""
+
 	$AlertUpdatesReport += "#===================================================================="
 	}
 
@@ -5765,7 +6298,7 @@ get-scomalert -name "Proactive NOSC DailyTasks DailySummary SCOMAdmin AlertUpdat
 #Log an event for script ending and total execution time.
 $EndTime = Get-Date
 $ScriptTime = ($EndTime - $StartTime).TotalSeconds
-$momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime: ($ScriptTime) seconds.")
+$momapi.LogScriptEvent($ScriptName,$EventID,0,"SCOMAdmin AlertUpdates Report Script Completed.  Script Runtime: ($ScriptTime) seconds.")
 #=================================================================================
 # End of script
                 </ScriptBody>
@@ -6474,7 +7007,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           </WriteAction>
         </WriteActions>
       </Rule>
-      <Rule ID="Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule" Enabled="false" Target="SC!Microsoft.SystemCenter.AllManagementServersPool" ConfirmDelivery="true" Remotable="true" Priority="Normal" DiscardLevel="100">
+      <Rule ID="Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule" Enabled="true" Target="SC!Microsoft.SystemCenter.AllManagementServersPool" ConfirmDelivery="true" Remotable="true" Priority="Normal" DiscardLevel="100">
         <Category>Alert</Category>
         <DataSources>
           <DataSource ID="DS" TypeID="Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Alert.Rule.Datasource">
@@ -6496,7 +7029,7 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
           </WriteAction>
         </WriteActions>
       </Rule>
-      <Rule ID="Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Task.Alert.Rule" Enabled="false" Target="SC!Microsoft.SystemCenter.AllManagementServersPool" ConfirmDelivery="true" Remotable="true" Priority="Normal" DiscardLevel="100">
+      <Rule ID="Proactive.NOSC.DailyTasks.DailySummary.SCOMAdmin.AlertUpdates.Report.Script.Task.Alert.Rule" Enabled="true" Target="SC!Microsoft.SystemCenter.AllManagementServersPool" ConfirmDelivery="true" Remotable="true" Priority="Normal" DiscardLevel="100">
         <Category>Alert</Category>
         <DataSources>
           <DataSource ID="DS" TypeID="Windows!Microsoft.Windows.EventProvider">
@@ -6640,6 +7173,12 @@ $momapi.LogScriptEvent($ScriptName,$EventID,0,"Script Completed.  Script Runtime
         <DisplayString ElementID="Proactive.NOSC.Daily.Tasks">
           <Name>Proactive NOSC Daily Tasks</Name>
           <Description>
+v1.0.5.7  13 Jan 2025 Updated SCOMAlerts report details with format-table properties from select
+v1.0.5.6  15 Nov 2024 SCOMAdmin and Daily Summary, Logical disk report changes
+v1.0.5.4  12 Nov 2024 AlertUpdates report and various logging changes
+v1.0.5.3   5 Nov 2024 Enabled AlertUpdate rules
+v1.0.5.2  30 Oct 2024 Daily Summary and SCOMAlerts report updates
+v1.0.5.1  17 Oct 2024 Added Operations Manager Event ID's 22402, 22406
 v1.0.5.0   4 Jan 2024 Resolution State logic improvements for large environments
 v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates
 v1.0.4.8  20 Dec 2023 Updated all Get-SCOMAlert queries to use -ResolutionState (0..254) for performance increase over where-object 		  
@@ -6749,18 +7288,6 @@ Message: {1}
           <Name>Proactive NOSC DailyTasks.LogicalDiskFreeSpaceAlerts.Report Script Alert Rule Triggered</Name>
           <Description>Proactive NOSC DailyTasks.LogicalDiskFreeSpaceAlerts.Report Script Alert Rule
 
-Daily Report for Logical Disk free space alerts
-
-Alert Count: {0}
-Message: {1}
-
-# Summary:
-#=========================================================================
-{2}
-
-# Details
-#=========================================================================
-Details:
 {3}
 </Description>
         </DisplayString>
