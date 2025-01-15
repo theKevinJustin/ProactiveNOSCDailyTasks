@@ -1,4 +1,4 @@
-# Proactive.NOSC.Daily.Tasks v1.0.5.0
+# Proactive.NOSC.Daily.Tasks v1.0.5.7
 
 Download [here](https://github.com/theKevinJustin/ProactiveNOSCDailyTasks/blob/main/Proactive.NOSC.Daily.Tasks.xml)
 
@@ -6,7 +6,9 @@ Download [here](https://github.com/theKevinJustin/ProactiveNOSCDailyTasks/blob/m
 Management pack provides summary report alerts of key insights including:
 Expiring certificates, Logical Disk alerts, Pending reboots, System Admin summary, and SCOM admin reports including long-running scripts, script errors, SCOM errors, and alert updates report.
 
-Blog [https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/](https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/)
+Blog [[https://kevinjustin.com/blog/2025/01/15/updated-nosc-daily-tasks/](https://kevinjustin.com/blog/2025/01/15/updated-nosc-daily-tasks/)
+
+Previous Blog [https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/](https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/)
 
 # Change History
 ```
