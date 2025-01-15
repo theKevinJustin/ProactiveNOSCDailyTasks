@@ -10,6 +10,12 @@ Blog [https://kevinjustin.com/blog/2023/08/15/proactive-daily-reports/](https://
 
 # Change History
 ```
+v1.0.5.7  13 Jan 2025 Updated SCOMAlerts report details with format-table properties from select
+v1.0.5.6  15 Nov 2024 SCOMAdmin and Daily Summary, Logical disk report changes
+v1.0.5.4  12 Nov 2024 AlertUpdates report and various logging changes
+v1.0.5.3   5 Nov 2024 Enabled AlertUpdate rules
+v1.0.5.2  30 Oct 2024 Daily Summary and SCOMAlerts report updates
+v1.0.5.1  17 Oct 2024 Added Operations Manager Event ID's 22402, 22406
 v1.0.5.0   4 Jan 2024 Resolution State logic improvements for large environments
 v1.0.4.9  21 Dec 2023 WhiteSpace, newline, return updates, Expiring Certs report moved back 1 hour
 v1.0.4.8  20 Dec 2023 Updated all Get-SCOMAlert queries to use -ResolutionState (0..254) for performance increase over where-object
